@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Spark Hub</title>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#091723" stroke="#254357" stroke-width="2"/>
+  <g fill="none" stroke="#76b900" stroke-linecap="round" stroke-width="3.25">
+    <path d="M25 25 15.5 16.5M39 25l9.5-8.5M39 39l9.5 8.5M25 39 15.5 47.5" opacity=".82"/>
+  </g>
+  <g fill="#b5e94b">
+    <circle cx="14" cy="15" r="5"/>
+    <circle cx="50" cy="15" r="5"/>
+    <circle cx="50" cy="49" r="5"/>
+    <circle cx="14" cy="49" r="5"/>
+  </g>
+  <path d="M32 13 46 21v21L32 50 18 42V22Z" fill="#0c1b27" stroke="#b5e94b" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m32 14 12.5 7.5L32 29 19.5 22Z" fill="#284858"/>
+  <path d="M19 22.5 31.3 30v18L19 41Z" fill="#183343"/>
+  <path d="m45 22.5-12.3 7.3v18L45 41Z" fill="#102531"/>
+  <path d="m24 25 7 4.2v15l-7-4.1Z" fill="#0b1722" stroke="#76b900" stroke-width="1" stroke-linejoin="round"/>
+  <path d="m27 29 3 1.8m-3 2.1 3 1.8m-3 2.1 3 1.8" stroke="#b5e94b" stroke-width="1.3" stroke-linecap="round"/>
+  <circle cx="38.5" cy="36" r="2" fill="#b5e94b"/>
+  <path d="M35 41h7" stroke="#6c8796" stroke-width="1.3" stroke-linecap="round"/>
+</svg>

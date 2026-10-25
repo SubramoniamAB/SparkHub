@@ -1,0 +1,11 @@
+{
+  "_comment": "Optional. Add or correct ratings by Hugging Face repo id. Keys starting with _ are ignored. Values are shown as-is; cite your source.",
+  "_example/Some-Model-30B": {
+    "intelligence": 50.1,
+    "coding": 45.0,
+    "math": 70.2,
+    "livecodebench": 0.55,
+    "source": "Model card",
+    "url": "https://huggingface.co/_example/Some-Model-30B"
+  }
+}

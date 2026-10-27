@@ -16,7 +16,7 @@ Ratings from Artificial Analysis require a key. Without one, those ratings may b
 
 ## Run Spark Hub on another computer
 
-The supported full setup is a Linux computer that hosts Spark Hub. Other computers on the same trusted local network can use it in a browser; they do not need Python or a local copy of the project.
+The full setup can run on a Linux or Windows host. Other computers on the same trusted local network can use it in a browser; they do not need Python or a local copy of the project. For Windows, follow the [Windows deployment instructions](windows/instructions.md). The steps below describe a Linux host.
 
 ### 1. Copy the project folder to the Linux host
 
@@ -38,11 +38,11 @@ The full dashboard and collector need Python 3.8 or newer. Manual collection als
 
 ```bash
 chmod +x setup.sh spark_hub_fetch.py spark_hub_server.py install_sparkhub_monitor.sh
-./install_sparkhub_monitor.sh 8090
 ./setup.sh --run
+./install_sparkhub_monitor.sh 8090
 ```
 
-The first command installs and starts the Spark Hub monitor on port 8090. The second command performs a one-time initial data refresh. To check the service later:
+The first command performs the initial data refresh. Wait for it to finish before opening `http://localhost:8090/` or installing the monitor. The second command installs and starts the Spark Hub monitor on port 8090. To check the service later:
 
 ```bash
 systemctl --user status spark-hub-web.service --no-pager
@@ -68,21 +68,27 @@ The host must stay powered on with the monitor service running. Its firewall may
 
 ### Static, read-only option
 
-For a basic read-only display, `index.html` and `data.js` can be served together by any static web server. This mode does not include the manual-run API, live monitor, run history, or scheduling. The Linux monitor service above is needed for those features.
+For a basic read-only display, `index.html` and `data.js` can be served together by any static web server. This mode does not include the manual-run API, live monitor, run history, or scheduling. The host monitor setup described above is needed for those features.
 
 ## Manual and scheduled collection
 
-To run a manual refresh in the dashboard, open **Data & Refresh → Run & Monitor** and select **Run data refresh now**. The live log is shown during a manual run and clears to an idle message when that run finishes. You can also run a refresh from the host terminal:
+To run a manual refresh in the dashboard, open **Data & Refresh → Run & Monitor** and select **Run data refresh now**. The live log is shown during a manual run and clears to an idle message when that run finishes. On Linux, run a refresh from the host terminal with:
 
 ```bash
 ./setup.sh --run
 ```
 
+On Windows, run this from PowerShell in the project folder:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows\setup.ps1 -Action Run
+```
+
 To schedule collection through the dashboard, open **Data & Refresh → Settings**, select the sources, choose the time and repetition, and save. That dashboard schedule is disabled until you enable and save it. It runs only while the Spark Hub monitor service is active.
 
-There is also a legacy cron setup: running `./setup.sh` with no options performs a refresh and installs cron entries for a full refresh every six hours and a forum refresh hourly. Those cron jobs are separate from the schedule in dashboard Settings. Use one scheduling method to avoid duplicate collection.
+On Linux, there is also a legacy cron setup: running `./setup.sh` with no options performs a refresh and installs cron entries for a full refresh every six hours and a forum refresh hourly. Those cron jobs are separate from the schedule in dashboard Settings. Use one scheduling method to avoid duplicate collection.
 
-Optional source tokens are stored outside the project folder in `~/.config/spark-hub/env` (or the equivalent under `XDG_CONFIG_HOME`). Do not place credentials in files served by the web server.
+On Linux, optional source tokens are stored outside the project folder in `~/.config/spark-hub/env` (or the equivalent under `XDG_CONFIG_HOME`). On Windows, they are stored in `%APPDATA%\spark-hub\env`. Do not place credentials in files served by the web server.
 
 ## Project files
 
@@ -97,9 +103,12 @@ Optional source tokens are stored outside the project folder in `~/.config/spark
 | `spark_hub_server.py` | Serves the dashboard and provides local status, manual-run, history, source, and schedule APIs. |
 | `setup.sh` | Runs collection, reports status, and manages the legacy cron and web-server setup. |
 | `install_sparkhub_monitor.sh` | Installs and starts the Linux user service for the dashboard and refresh API. |
+| `windows/` | Windows PowerShell deployment script and instructions. |
+| `screenshot.md` | Static gallery of screenshots from Spark Hub pages and features. |
 | `sparkhub-icon.svg` | Spark Hub brand mark used in the navigation and About page. |
 | `favicon.svg` | Browser tab icon. |
 | `developer-photo.jpg` | Developer photo shown in the About page credits. |
 | `ratings_overrides.json` | Optional local rating corrections keyed by model repository ID. Preserve any overrides you add. |
+| `screenshots/` | Screenshots of Spark Hub pages and features. |
 
 `data.js`, `data.json`, and `.cache.json` are generated or maintained by the collector. Keep them when copying an existing installation to preserve its dataset and comparison state; a new collection can regenerate them. The rating overrides are optional user configuration.

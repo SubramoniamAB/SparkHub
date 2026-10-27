@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Spark Hub static web server plus a small local refresh-monitor API.
 
-The manual-run endpoint launches the same setup.sh --run command used by cron.
-Run lock handling remains in setup.sh (flock). API binds to the chosen interface;
-manual POST requests require a short-lived same-origin token.
+On Linux, manual refreshes use setup.sh --run (which provides flock locking).
+On Windows, the API launches the Python collector directly. API binds to the
+chosen interface; manual POST requests require a short-lived same-origin token.
 """
 import argparse, datetime as dt, json, os, secrets, subprocess, threading, time, calendar, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -185,6 +185,8 @@ def scheduled_dispatcher():
 
 def remove_legacy_sparkhub_cron():
     """Remove older automatic Spark Hub cron entries; retain unrelated crontab lines."""
+    if os.name == "nt":
+        return
     try:
         current = subprocess.check_output(["crontab", "-l"], stderr=subprocess.DEVNULL, text=True)
     except Exception:
@@ -214,10 +216,15 @@ def launch_refresh(sources=None, trigger="manual"):
         RUN_META.write_text(json.dumps(meta),encoding="utf-8")
         env=os.environ.copy(); env["SPARK_HUB_PROGRESS_FILE"]=str(PROGRESS)
         setup = ROOT / "setup.sh"
-        cmd=["/bin/bash",str(setup),"--run"] if setup.exists() else [sys.executable,str(ROOT/"spark_hub_fetch.py"),"--out",str(ROOT)]
+        if os.name == "nt":
+            cmd=[sys.executable,str(ROOT/"spark_hub_fetch.py"),"--out",str(ROOT)]
+        else:
+            cmd=["/bin/bash",str(setup),"--run"] if setup.exists() else [sys.executable,str(ROOT/"spark_hub_fetch.py"),"--out",str(ROOT)]
         for source in selected: cmd.extend(["--only", source])
         with LOG.open("a",encoding="utf-8") as log_file:
-            PROC=subprocess.Popen(cmd,cwd=str(ROOT),env=env,stdout=log_file,stderr=subprocess.STDOUT,start_new_session=True)
+            popen_options={"cwd":str(ROOT),"env":env,"stdout":log_file,"stderr":subprocess.STDOUT}
+            if os.name != "nt": popen_options["start_new_session"]=True
+            PROC=subprocess.Popen(cmd,**popen_options)
         threading.Thread(target=Handler._wait_run_static,args=(PROC,started),daemon=True).start()
         return True, str(PROC.pid)
     except Exception as exc:

@@ -1351,7 +1351,7 @@ function renderAbout(el) {
         </section>
       </div>
     </div>
-    <section class="card about-card" style="margin-top:14px"><h2>▣ &nbsp;Run Spark Hub on another machine</h2><p class="muted" style="line-height:1.65">Copy the complete SparkHub folder to a Linux computer to host the dashboard and data collector. Other computers on the same trusted local network can open it in a browser; they do not need a local Python installation. Linux user systemd is used for the full monitor service.</p>
+    <section class="card about-card" style="margin-top:14px"><h2>▣ &nbsp;Run Spark Hub on another machine</h2><p class="muted" style="line-height:1.65">Copy the complete SparkHub folder to a Linux or Windows computer to host the dashboard and data collector. Other computers on the same trusted local network can open it in a browser; they do not need a local Python installation. Linux uses a user systemd service; Windows uses a PowerShell setup script and a per-user Task Scheduler task.</p>
       <h3>Project files</h3>
       <div class="about-file"><code>README.md</code><span>Project overview, setup instructions, remote access steps, and this file guide.</span></div>
       <div class="about-file"><code>index.html</code><span>Dashboard interface: navigation, pages, search, filters, tools, and About content.</span></div>
@@ -1362,27 +1362,33 @@ function renderAbout(el) {
       <div class="about-file"><code>spark_hub_server.py</code><span>Serves the dashboard and provides local status, manual-run, history, source, and schedule APIs.</span></div>
       <div class="about-file"><code>setup.sh</code><span>Runs data collection and manages status plus the legacy cron and web-server setup.</span></div>
       <div class="about-file"><code>install_sparkhub_monitor.sh</code><span>Installs and starts the Linux user service for the dashboard and refresh API.</span></div>
+      <div class="about-file"><code>windows/</code><span>Windows PowerShell deployment script and instructions.</span></div>
       <div class="about-file"><code>sparkhub-icon.svg</code><span>Spark Hub brand mark used in the navigation and on this page.</span></div>
       <div class="about-file"><code>favicon.svg</code><span>Icon shown in the browser tab.</span></div>
       <div class="about-file"><code>developer-photo.jpg</code><span>Developer photo shown in the About page credits.</span></div>
       <div class="about-file"><code>ratings_overrides.json</code><span>Optional local model rating corrections. Preserve any overrides you add.</span></div>
       <h3 style="margin-top:16px">Install on the Linux host</h3>
-      <p class="small muted">Copy the complete project folder to the host first. It needs Python 3.8+ and <code>flock</code> for manual refreshes.</p>
+      <p class="small muted">Copy the complete project folder to the host first. It needs Python 3.8+ and <code>flock</code> for manual refreshes. Run the initial refresh and wait for it to finish before starting the monitor or opening the dashboard.</p>
       <div class="about-code"># On the computer that has the SparkHub folder
 scp -r ./SparkHub &lt;username&gt;@&lt;spark-host&gt;:~/SparkHub
 
-# Connect to the host and install the monitor
+# Connect to the host and refresh the data first
 ssh &lt;username&gt;@&lt;spark-host&gt;
 cd ~/SparkHub
 chmod +x setup.sh spark_hub_fetch.py spark_hub_server.py install_sparkhub_monitor.sh
-./install_sparkhub_monitor.sh 8090
-./setup.sh --run</div>
+./setup.sh --run
+
+# After the refresh completes, install and start the monitor
+./install_sparkhub_monitor.sh 8090</div>
+      <h3 style="margin-top:16px">Install on Windows</h3>
+      <p class="small muted">Copy the complete project folder to a Windows 10 or 11 host with Python 3.8+ installed. From PowerShell in the project folder, run the command below. It completes the initial refresh before installing and starting the per-user monitor task; wait for the script to finish before opening <code>http://localhost:8090/</code>. See <a href="windows/instructions.md">windows/instructions.md</a> for firewall, token, and scheduling details.</p>
+      <div class="about-code">powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows\setup.ps1 -Action Install</div>
       <h3 style="margin-top:16px">Open it from another computer</h3>
-      <p class="small muted">On the host, run <code>hostname -I</code> to find its LAN address. From a browser on another computer on the same trusted network, open <code>http://&lt;spark-host-LAN-IP&gt;:8090/</code>. The host must stay on with the monitor service active. Allow TCP port 8090 from your local network in the host firewall if needed. Keep the service off the public internet; the host needs internet access to fetch data.</p>
-      <p class="small muted">For the manual refresh feature, use <strong>Data &amp; Refresh → Run &amp; Monitor</strong>. Set a dashboard schedule in <strong>Data &amp; Refresh → Settings</strong>; it stays disabled until enabled and saved. The separate <code>./setup.sh</code> no-option setup installs legacy cron jobs (full refresh every six hours and forum hourly), so choose one scheduling method to avoid duplicate collection. A static web server can show a read-only snapshot but does not provide the monitor API.</p>
+      <p class="small muted">On Linux, run <code>hostname -I</code> to find the host's LAN address; on Windows, run <code>ipconfig</code>. From a browser on another computer on the same trusted network, open <code>http://&lt;spark-host-LAN-IP&gt;:8090/</code>. The host must stay on with the monitor active. Allow TCP port 8090 from the local network in the host firewall if needed; on Windows, limit the rule to the Private profile. Keep the service off the public internet. The host needs internet access to fetch data.</p>
+      <p class="small muted">For manual refreshes, use <strong>Data &amp; Refresh → Run &amp; Monitor</strong>. Set a dashboard schedule in <strong>Data &amp; Refresh → Settings</strong>; it stays disabled until enabled and saved. On Linux, the separate <code>./setup.sh</code> no-option setup installs legacy cron jobs (full refresh every six hours and forum hourly), so choose one scheduling method to avoid duplicate collection. A static web server can show a read-only snapshot but does not provide the monitor API.</p>
     </section>
     <section class="card about-card" style="margin-top:14px"><h2>⌘ &nbsp;Command-line options</h2>
-      <p class="muted" style="line-height:1.6">Spark Hub has two command-line entry points: <code>setup.sh</code> for installation, scheduling, service status, and one-off runs; and <code>spark_hub_fetch.py</code> for controlling which data sources the collector refreshes. Run the help command for the installed version's usage.</p>
+      <p class="muted" style="line-height:1.6">On Linux, use <code>setup.sh</code> for installation, scheduling, service status, and one-off runs. On Windows, use <code>windows/setup.ps1</code> for installation, monitor status, and one-off runs. The <code>spark_hub_fetch.py</code> collector supports selecting which data sources to refresh.</p>
       <h3>setup.sh</h3>
       <div class="about-code">./setup.sh --help</div>
       <table class="about-cli-table"><thead><tr><th>Option</th><th>Description</th><th>Example</th></tr></thead><tbody>
@@ -1393,6 +1399,14 @@ chmod +x setup.sh spark_hub_fetch.py spark_hub_server.py install_sparkhub_monito
         <tr><td><code>--status</code></td><td>Show configured cron entries, web service status (when user systemd is available), and recent collector log lines.</td><td><code>./setup.sh --status</code></td></tr>
         <tr><td><code>--uninstall</code></td><td>Remove Spark Hub cron entries and the installed web service, while keeping project files and configuration files.</td><td><code>./setup.sh --uninstall</code></td></tr>
         <tr><td><code>-h, --help</code></td><td>Print the setup script's short usage summary.</td><td><code>./setup.sh --help</code></td></tr>
+      </tbody></table>
+      <h3 style="margin-top:18px">windows/setup.ps1</h3>
+      <div class="about-code">powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\windows\setup.ps1 -Action Install</div>
+      <table class="about-cli-table"><thead><tr><th>Action</th><th>Description</th><th>Example</th></tr></thead><tbody>
+        <tr><td><code>Install</code></td><td>Run the initial refresh, then install and start the per-user monitor task. Wait for the refresh to finish before opening the dashboard.</td><td><code>-Action Install</code></td></tr>
+        <tr><td><code>Run</code></td><td>Run a refresh now. Optionally select sources with <code>-Sources</code>.</td><td><code>-Action Run -Sources forum,models</code></td></tr>
+        <tr><td><code>Status</code></td><td>Show the monitor task state and check whether the local server responds.</td><td><code>-Action Status</code></td></tr>
+        <tr><td><code>Uninstall</code></td><td>Remove the monitor task while keeping project data and token configuration.</td><td><code>-Action Uninstall</code></td></tr>
       </tbody></table>
       <h3 style="margin-top:18px">spark_hub_fetch.py</h3>
       <div class="about-code">python3 spark_hub_fetch.py --help</div>
